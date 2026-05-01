@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>{{ page.title }} | Blog Saya</title>
+    <title>Home | Blog Saya</title>
 
     <!-- SEO basic -->
     <meta
       name="description"
-      content="{{ page.excerpt | strip_html | truncate: 150 }}"
+      content=""
     />
     <meta name="author" content="Alph" />
 
@@ -24,11 +24,27 @@
       </div>
     </header>
 
-    <main class="container">{{ content }}</main>
+    <main class="container"><section class="post-list">
+  <h2>Daftar Artikel</h2>
+
+  
+  <article class="post-item">
+    <h3>
+      <a href="/2026/05/02/ini-adalah-post-resmi-pertama-saya.html">ini adalah post resmi pertama saya</a>
+    </h3>
+
+    <p class="post-date">02 May 2026</p>
+
+    <p class="post-excerpt"><p>ini adlaah post pertama resmi saya</p>
+</p>
+  </article>
+  
+</section>
+</main>
 
     <footer class="site-footer">
       <div class="container">
-        <p>© {{ "now" | date: "%Y" }} Blog Saya</p>
+        <p>© 2026 Blog Saya</p>
       </div>
     </footer>
   </body>
