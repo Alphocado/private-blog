@@ -1,86 +1,126 @@
-body {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #f9f9f9;
+/* ==== RESET & BASE ==== */
+* {
+  box-sizing: border-box;
   margin: 0;
-  color: #333;
+  padding: 0;
 }
 
-/* Container */
+body {
+  font-family:
+    "Inter",
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  line-height: 1.7;
+  background-color: #f8f9fa;
+  color: #2d3436;
+  padding: 2rem 1rem;
+}
+
+/* ==== CONTAINER ==== */
 .container {
-  max-width: 750px;
-  margin: auto;
-  padding: 20px;
-  background: white;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
-/* Header */
-.site-header {
-  background: white;
-  border-bottom: 1px solid #ddd;
+/* ==== HEADER BLOG ==== */
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #1a1a2e;
+  letter-spacing: -0.5px;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.5rem;
 }
 
-.site-header h1 a {
-  text-decoration: none;
-  color: black;
+/* ==== DAFTAR POST ==== */
+.post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
 }
 
-.tagline {
-  color: gray;
-  font-size: 14px;
-}
-
-/* Footer */
-.site-footer {
-  text-align: center;
-  font-size: 14px;
-  color: gray;
-  margin-top: 40px;
-}
-
-/* Post list */
+/* ==== KARTU POST ==== */
 .post-item {
-  margin-bottom: 30px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 15px;
+  background: white;
+  border-radius: 12px;
+  padding: 1.8rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  border: 1px solid #f1f3f5;
 }
 
-.post-item h3 a {
+.post-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* Judul post */
+.post-item h2 {
+  font-size: 1.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.post-item h2 a {
   text-decoration: none;
-  color: #111;
+  color: #1a1a2e;
+  transition: color 0.2s;
 }
 
-.post-item h3 a:hover {
-  color: #007acc;
+.post-item h2 a:hover {
+  color: #0f6f9b;
 }
 
-/* Post page */
-.post-title {
-  font-size: 32px;
-  margin-bottom: 5px;
-}
-
+/* Tanggal */
 .post-meta {
-  color: gray;
-  font-size: 14px;
-  margin-bottom: 20px;
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 0.8rem;
+  letter-spacing: 0.3px;
+}
+
+/* Ringkasan */
+.post-excerpt {
+  color: #495057;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* ==== HALAMAN POST ==== */
+.post {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.post h1 {
+  border-bottom: none;
+  margin-bottom: 0.25rem;
 }
 
 .post-content {
-  line-height: 1.7;
-  font-size: 18px;
-}
-
-/* Markdown styling */
-.post-content h2 {
-  margin-top: 30px;
+  margin-top: 2rem;
+  font-size: 1.05rem;
 }
 
 .post-content p {
-  margin-bottom: 15px;
+  margin-bottom: 1.2rem;
 }
 
-.post-content code {
-  background: #eee;
-  padding: 2px 5px;
-  border-radius: 5px;
+/* ==== RESPONSIVE ==== */
+@media (max-width: 600px) {
+  body {
+    padding: 1.5rem 0.8rem;
+  }
+  .post-item {
+    padding: 1.2rem;
+  }
+  h1 {
+    font-size: 2rem;
+  }
 }

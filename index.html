@@ -1,20 +1,21 @@
----
-layout: default
-title: Home
----
-
-<section class="post-list">
-  <h2>Daftar Artikel</h2>
-
-  {% for post in site.posts %}
-  <article class="post-item">
-    <h3>
-      <a href="{{ post.url }}">{{ post.title }}</a>
-    </h3>
-
-    <p class="post-date">{{ post.date | date: "%d %B %Y" }}</p>
-
-    <p class="post-excerpt">{{ post.excerpt }}</p>
-  </article>
-  {% endfor %}
-</section>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Saya</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Blog Saya</h1>
+    <section class="post-list">
+      <article class="post-item">
+  <h2><a href="posts/2026-05-02/ini-post-ketiga.html">ini post ketiga</a></h2>
+  <p class="post-meta">2 Mei 2026</p>
+  <p class="post-excerpt">kok yang sebelumnya hilang?</p>
+</article>
+    </section>
+  </main>
+</body>
+</html>
