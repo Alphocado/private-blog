@@ -2,10 +2,9 @@ import os
 import re
 from datetime import datetime
 
-# Folder tempat semua post disimpan
 POSTS_DIR = 'posts'
 INDEX_FILE = 'index.html'
-# Template daftar post di index.html
+
 HTML_TEMPLATE = '''<!DOCTYPE html>
 <html lang="id">
 <head>
@@ -31,29 +30,24 @@ POST_ITEM_TEMPLATE = '''<article class="post-item">
 </article>'''
 
 def parse_post(file_path, folder_name):
-    """Mengambil judul, deskripsi, dan konten dari file HTML post."""
     with open(file_path, 'r', encoding='utf-8') as f:
         html = f.read()
 
-    # Ambil judul dari <title>
     title_match = re.search(r'<title>(.*?)</title>', html, re.DOTALL)
     title = title_match.group(1).strip() if title_match else 'Tanpa Judul'
 
-    # Ambil excerpt dari <meta name="description">
     desc_match = re.search(r'<meta\s+name="description"\s+content="(.*?)"\s*/?>', html, re.IGNORECASE)
     excerpt = desc_match.group(1).strip() if desc_match else ''
 
-    # Format tanggal dari nama folder (YYYY-MM-DD)
     try:
         date_obj = datetime.strptime(folder_name, '%Y-%m-%d')
-        # Format Indonesia: 2 Mei 2026
         bulan = [
             'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
             'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
         ]
         date_display = f"{date_obj.day} {bulan[date_obj.month-1]} {date_obj.year}"
     except ValueError:
-        date_display = folder_name  # fallback
+        date_display = folder_name
 
     return {
         'title': title,
@@ -64,28 +58,24 @@ def parse_post(file_path, folder_name):
     }
 
 def build_index():
-    """Membangun ulang index.html dari seluruh post."""
     posts = []
 
     if not os.path.isdir(POSTS_DIR):
         os.makedirs(POSTS_DIR, exist_ok=True)
 
-    # Loop semua folder di dalam posts/
-    for folder in sorted(os.listdir(POSTS_DIR), reverse=True):
+    folders = sorted(os.listdir(POSTS_DIR), reverse=True)
+    for folder in folders:
         folder_path = os.path.join(POSTS_DIR, folder)
         if not os.path.isdir(folder_path):
             continue
-        # Ambil SEMUA file .html di dalam folder ini
-        html_files = [f for f in os.listdir(folder_path) if f.endswith('.html')]
-        if not html_files:
-            continue
-        for filename in html_files:
-            file_path = os.path.join(folder_path, filename)
+        # ambil SEMUA file .html di folder ini
+        html_files = sorted([f for f in os.listdir(folder_path) if f.endswith('.html')])
+        for fname in html_files:
+            file_path = os.path.join(folder_path, fname)
             post = parse_post(file_path, folder)
-            post['link'] = f"{POSTS_DIR}/{folder}/{filename}"
+            post['link'] = f"{POSTS_DIR}/{folder}/{fname}"
             posts.append(post)
 
-    # Buat HTML daftar post
     posts_html = ''
     for p in posts:
         posts_html += POST_ITEM_TEMPLATE.format(
@@ -95,11 +85,10 @@ def build_index():
             excerpt=p['excerpt']
         )
 
-    # Tulis index.html
     with open(INDEX_FILE, 'w', encoding='utf-8') as f:
         f.write(HTML_TEMPLATE.format(posts_html=posts_html))
 
-    print(f"{len(posts)} post berhasil dimuat ke {INDEX_FILE}")
+    print(f"{len(posts)} post dimuat ke {INDEX_FILE}")
 
 if __name__ == '__main__':
     build_index()
