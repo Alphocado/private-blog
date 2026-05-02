@@ -1,3 +1,41 @@
+/* ===== CSS CUSTOM PROPERTIES ===== */
+:root {
+  --bg: #f8f9fa;
+  --text: #2d3436;
+  --card-bg: #ffffff;
+  --card-border: #f1f3f5;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  --card-shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.06);
+  --heading: #1a1a2e;
+  --meta: #6c757d;
+  --excerpt: #495057;
+  --link: #1a1a2e;
+  --link-hover: #0f6f9b;
+  --toggle-bg: #ffffff;
+  --toggle-border: #e2e8f0;
+  --toggle-icon: "☀️";
+  --navbar-bg: #ffffff;
+  --navbar-border: #e2e8f0;
+}
+[data-theme="dark"] {
+  --bg: #1a1a2e;
+  --text: #e0e0e0;
+  --card-bg: #2d2d44;
+  --card-border: #3d3d5c;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --card-shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.4);
+  --heading: #ffffff;
+  --meta: #a0a0b0;
+  --excerpt: #c0c0c0;
+  --link: #ffffff;
+  --link-hover: #ffb86c;
+  --toggle-bg: #2d2d44;
+  --toggle-border: #5a5a7a;
+  --toggle-icon: "🌙";
+  --navbar-bg: #2d2d44;
+  --navbar-border: #3d3d5c;
+}
+/* ===== RESET & BASE ===== */
 *,
 *::before,
 *::after {
@@ -13,42 +51,94 @@ body {
     -apple-system,
     sans-serif;
   line-height: 1.7;
-  background-color: #f8f9fa;
-  color: #2d3436;
-  padding: clamp(1rem, 4vw, 2rem) clamp(0.8rem, 3vw, 1.5rem);
+  background-color: var(--bg);
+  color: var(--text);
+  padding: 0 0 2rem;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
 }
+/* ===== NAVBAR ===== */
+.navbar {
+  background: var(--navbar-bg);
+  border-bottom: 1px solid var(--navbar-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 1.2rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition:
+    background 0.3s,
+    border 0.3s;
+}
+.logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--heading);
+  text-decoration: none;
+  letter-spacing: -0.3px;
+}
+.logo:hover {
+  color: var(--link-hover);
+}
+#theme-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--toggle-border);
+  background: var(--toggle-bg);
+  font-size: 1.4rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition:
+    background 0.3s,
+    border 0.3s;
+}
+#theme-toggle::after {
+  content: var(--toggle-icon);
+}
+/* ===== CONTAINER ===== */
 .container {
   width: min(100% - 2rem, 720px);
-  margin: 0 auto;
+  margin: 2rem auto 0;
 }
 h1 {
   font-size: clamp(2rem, 6vw, 2.5rem);
   font-weight: 700;
   margin-bottom: clamp(1rem, 3vw, 2rem);
-  color: #1a1a2e;
+  color: var(--heading);
   letter-spacing: -0.5px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--card-border);
   padding-bottom: 0.5rem;
 }
+/* ===== DAFTAR POST ===== */
 .post-list {
   display: flex;
   flex-direction: column;
   gap: clamp(1rem, 3vw, 1.8rem);
 }
 .post-item {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: clamp(8px, 2vw, 12px);
   padding: clamp(1rem, 3vw, 1.8rem);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--card-shadow);
   transition:
     transform 0.2s ease,
-    box-shadow 0.2s ease;
-  border: 1px solid #f1f3f5;
+    box-shadow 0.2s ease,
+    background-color 0.3s;
+  border: 1px solid var(--card-border);
 }
 @media (hover: hover) {
   .post-item:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--card-shadow-hover);
   }
 }
 .post-item h2 {
@@ -57,28 +147,30 @@ h1 {
 }
 .post-item h2 a {
   text-decoration: none;
-  color: #1a1a2e;
+  color: var(--link);
   transition: color 0.2s;
 }
 .post-item h2 a:hover {
-  color: #0f6f9b;
+  color: var(--link-hover);
 }
 .post-meta {
   font-size: clamp(0.8rem, 2vw, 0.9rem);
-  color: #6c757d;
+  color: var(--meta);
   margin-bottom: 0.8rem;
   letter-spacing: 0.3px;
 }
 .post-excerpt {
-  color: #495057;
+  color: var(--excerpt);
   font-size: clamp(0.9rem, 2.5vw, 1rem);
   line-height: 1.6;
 }
+/* ===== HALAMAN POST ===== */
 .post {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: clamp(8px, 2vw, 12px);
   padding: clamp(1.2rem, 4vw, 2rem);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  box-shadow: var(--card-shadow);
+  transition: background-color 0.3s;
 }
 .post h1 {
   border-bottom: none;
@@ -92,51 +184,26 @@ h1 {
 .post-content p {
   margin-bottom: 1.2rem;
 }
-/* ==== RESPONSIVE FINE TUNING ==== */
-/* Tablet kecil & HP besar */
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  body {
-    padding: 1.2rem 0.8rem;
-  }
   .container {
     width: 100%;
-  }
-  .post-item {
-    padding: 1.2rem;
-  }
-  .post-item h2 {
-    font-size: 1.4rem;
   }
   h1 {
     font-size: 2rem;
   }
 }
-/* HP kecil */
 @media (max-width: 480px) {
-  body {
-    padding: 1rem 0.5rem;
+  .container {
+    padding: 0 0.5rem;
   }
-  .post-item {
-    padding: 1rem;
-    border-radius: 6px;
+  .navbar {
+    padding: 0.6rem 0.8rem;
   }
-  .post-item h2 {
-    font-size: 1.3rem;
-  }
-  .post-meta {
-    font-size: 0.75rem;
-  }
-  .post-excerpt {
-    font-size: 0.85rem;
-  }
-  .post {
-    padding: 1rem;
-  }
-  .post-content {
-    font-size: 0.95rem;
+  .logo {
+    font-size: 1.2rem;
   }
 }
-/* Laptop besar (opsional, agar konten tidak terlalu melebar) */
 @media (min-width: 1024px) {
   .container {
     max-width: 780px;

@@ -4,6 +4,8 @@ import os
 import re
 import subprocess
 from datetime import datetime
+
+from matplotlib.pyplot import title
 from build_site import build_index, POSTS_DIR
 
 class BlogGUI:
@@ -65,7 +67,7 @@ class BlogGUI:
         return slug.strip('-')
 
     def get_html_template(self, title, date_display, excerpt, content):
-        return f'''<!DOCTYPE html>
+      return f'''<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
@@ -75,6 +77,10 @@ class BlogGUI:
   <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
+  <nav class="navbar">
+    <a href="../../index.html" class="logo">LienardyBlog</a>
+    <button id="theme-toggle" aria-label="Toggle dark mode"></button>
+  </nav>
   <main class="container">
     <article class="post">
       <h1>{title}</h1>
@@ -84,9 +90,9 @@ class BlogGUI:
       </div>
     </article>
   </main>
+  <script src="../../script.js"></script>
 </body>
 </html>'''
-
     def parse_post_file(self, filepath, folder_date):
         with open(filepath, 'r', encoding='utf-8') as f:
             html = f.read()

@@ -10,16 +10,21 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blog Saya</title>
+  <title>LienardyBlog</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <nav class="navbar">
+    <a href="index.html" class="logo">LienardyBlog</a>
+    <button id="theme-toggle" aria-label="Toggle dark mode"></button>
+  </nav>
   <main class="container">
-    <h1>Blog Saya</h1>
+    <h1>LienardyBlog</h1>
     <section class="post-list">
       {posts_html}
     </section>
   </main>
+  <script src="script.js"></script>
 </body>
 </html>'''
 
