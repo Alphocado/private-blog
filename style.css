@@ -1,10 +1,10 @@
-/* ==== RESET & BASE ==== */
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
-
 body {
   font-family:
     "Inter",
@@ -15,112 +15,130 @@ body {
   line-height: 1.7;
   background-color: #f8f9fa;
   color: #2d3436;
-  padding: 2rem 1rem;
+  padding: clamp(1rem, 4vw, 2rem) clamp(0.8rem, 3vw, 1.5rem);
 }
-
-/* ==== CONTAINER ==== */
 .container {
-  max-width: 720px;
+  width: min(100% - 2rem, 720px);
   margin: 0 auto;
 }
-
-/* ==== HEADER BLOG ==== */
 h1 {
-  font-size: 2.5rem;
+  font-size: clamp(2rem, 6vw, 2.5rem);
   font-weight: 700;
-  margin-bottom: 2rem;
+  margin-bottom: clamp(1rem, 3vw, 2rem);
   color: #1a1a2e;
   letter-spacing: -0.5px;
   border-bottom: 2px solid #e2e8f0;
   padding-bottom: 0.5rem;
 }
-
-/* ==== DAFTAR POST ==== */
 .post-list {
   display: flex;
   flex-direction: column;
-  gap: 1.8rem;
+  gap: clamp(1rem, 3vw, 1.8rem);
 }
-
-/* ==== KARTU POST ==== */
 .post-item {
-  background: white;
-  border-radius: 12px;
-  padding: 1.8rem;
+  background: #fff;
+  border-radius: clamp(8px, 2vw, 12px);
+  padding: clamp(1rem, 3vw, 1.8rem);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
   border: 1px solid #f1f3f5;
 }
-
-.post-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+@media (hover: hover) {
+  .post-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+  }
 }
-
-/* Judul post */
 .post-item h2 {
-  font-size: 1.6rem;
+  font-size: clamp(1.3rem, 4vw, 1.6rem);
   margin-bottom: 0.35rem;
 }
-
 .post-item h2 a {
   text-decoration: none;
   color: #1a1a2e;
   transition: color 0.2s;
 }
-
 .post-item h2 a:hover {
   color: #0f6f9b;
 }
-
-/* Tanggal */
 .post-meta {
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
   color: #6c757d;
   margin-bottom: 0.8rem;
   letter-spacing: 0.3px;
 }
-
-/* Ringkasan */
 .post-excerpt {
   color: #495057;
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
   line-height: 1.6;
 }
-
-/* ==== HALAMAN POST ==== */
 .post {
-  background: white;
-  border-radius: 12px;
-  padding: 2rem;
+  background: #fff;
+  border-radius: clamp(8px, 2vw, 12px);
+  padding: clamp(1.2rem, 4vw, 2rem);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
-
 .post h1 {
   border-bottom: none;
   margin-bottom: 0.25rem;
+  font-size: clamp(2rem, 6vw, 2.5rem);
 }
-
 .post-content {
-  margin-top: 2rem;
-  font-size: 1.05rem;
+  margin-top: clamp(1.2rem, 4vw, 2rem);
+  font-size: clamp(0.95rem, 2.5vw, 1.05rem);
 }
-
 .post-content p {
   margin-bottom: 1.2rem;
 }
-
-/* ==== RESPONSIVE ==== */
-@media (max-width: 600px) {
+/* ==== RESPONSIVE FINE TUNING ==== */
+/* Tablet kecil & HP besar */
+@media (max-width: 768px) {
   body {
-    padding: 1.5rem 0.8rem;
+    padding: 1.2rem 0.8rem;
+  }
+  .container {
+    width: 100%;
   }
   .post-item {
     padding: 1.2rem;
   }
+  .post-item h2 {
+    font-size: 1.4rem;
+  }
   h1 {
     font-size: 2rem;
+  }
+}
+/* HP kecil */
+@media (max-width: 480px) {
+  body {
+    padding: 1rem 0.5rem;
+  }
+  .post-item {
+    padding: 1rem;
+    border-radius: 6px;
+  }
+  .post-item h2 {
+    font-size: 1.3rem;
+  }
+  .post-meta {
+    font-size: 0.75rem;
+  }
+  .post-excerpt {
+    font-size: 0.85rem;
+  }
+  .post {
+    padding: 1rem;
+  }
+  .post-content {
+    font-size: 0.95rem;
+  }
+}
+/* Laptop besar (opsional, agar konten tidak terlalu melebar) */
+@media (min-width: 1024px) {
+  .container {
+    max-width: 780px;
   }
 }
