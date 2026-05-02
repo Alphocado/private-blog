@@ -44,22 +44,32 @@ def parse_post(file_path, folder_name):
     desc_match = re.search(r'<meta\s+name="description"\s+content="(.*?)"\s*/?>', html, re.IGNORECASE)
     excerpt = desc_match.group(1).strip() if desc_match else ''
 
-    try:
-        date_obj = datetime.strptime(folder_name, '%Y-%m-%d')
-        bulan = [
-            'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-        ]
-        date_display = f"{date_obj.day} {bulan[date_obj.month-1]} {date_obj.year}"
-    except ValueError:
-        date_display = folder_name
+    dt_match = re.search(r'<meta\s+name="datetime"\s+content="(.*?)"\s*/?>', html, re.IGNORECASE)
+    dt_str = dt_match.group(1).strip() if dt_match else None
+
+    if dt_str:
+        try:
+            dt_obj = datetime.strptime(dt_str, '%Y-%m-%dT%H:%M:%S')
+        except ValueError:
+            dt_obj = datetime.strptime(folder_name, '%Y-%m-%d')
+    else:
+        dt_obj = datetime.strptime(folder_name, '%Y-%m-%d')
+
+    bulan = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ]
+    date_display = f"{dt_obj.day} {bulan[dt_obj.month-1]} {dt_obj.year}"
+    if dt_str:  # tampilkan jam jika ada
+        date_display += f", {dt_obj.hour:02d}:{dt_obj.minute:02d}"
 
     return {
         'title': title,
         'excerpt': excerpt,
         'date_display': date_display,
         'folder': folder_name,
-        'filename': os.path.basename(file_path)
+        'filename': os.path.basename(file_path),
+        'datetime_obj': dt_obj
     }
 
 def build_index():
@@ -73,13 +83,15 @@ def build_index():
         folder_path = os.path.join(POSTS_DIR, folder)
         if not os.path.isdir(folder_path):
             continue
-        # ambil SEMUA file .html di folder ini
         html_files = sorted([f for f in os.listdir(folder_path) if f.endswith('.html')])
         for fname in html_files:
             file_path = os.path.join(folder_path, fname)
             post = parse_post(file_path, folder)
             post['link'] = f"{POSTS_DIR}/{folder}/{fname}"
             posts.append(post)
+
+    # SORT by datetime descending
+    posts.sort(key=lambda p: p['datetime_obj'], reverse=True)
 
     posts_html = ''
     for p in posts:

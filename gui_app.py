@@ -4,14 +4,12 @@ import os
 import re
 import subprocess
 from datetime import datetime
-
-from matplotlib.pyplot import title
 from build_site import build_index, POSTS_DIR
 
 class BlogGUI:
     def __init__(self, root):
         self.root = root
-        root.title("Blog Manager - Static Site Generator")
+        root.title("Blog Manager - LienardyBlog")
         root.geometry("700x500")
 
         left_frame = tk.Frame(root, width=300)
@@ -21,7 +19,6 @@ class BlogGUI:
 
         self.listbox = tk.Listbox(left_frame)
         self.listbox.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        self.listbox.bind('<<ListboxSelect>>', self.on_select)
 
         right_frame = tk.Frame(root, width=200)
         right_frame.pack(side=tk.RIGHT, fill=tk.Y)
@@ -34,17 +31,12 @@ class BlogGUI:
 
         self.refresh_list()
 
-    # ============ FUNGSI GIT OTOMATIS ============
     def git_auto(self, commit_message="Update blog"):
-        """Jalankan build_index lalu git add, commit, push."""
         try:
-            # 1. Bangun ulang index.html
             build_index()
-            # 2. Git add semua perubahan
             subprocess.run(['git', 'add', '-A'], check=True, capture_output=True)
-            # 3. Cek apakah ada perubahan yang bisa di-commit
             result = subprocess.run(['git', 'status', '--porcelain'], capture_output=True, text=True)
-            if result.stdout.strip():  # ada perubahan
+            if result.stdout.strip():
                 subprocess.run(['git', 'commit', '-m', commit_message], check=True, capture_output=True)
                 subprocess.run(['git', 'push'], check=True, capture_output=True)
                 print("Git push berhasil.")
@@ -53,27 +45,27 @@ class BlogGUI:
         except subprocess.CalledProcessError as e:
             messagebox.showerror("Git Error", f"Gagal menjalankan git:\n{e.stderr}")
         except FileNotFoundError:
-            messagebox.showerror("Error", "Git tidak ditemukan. Pastikan git terinstal dan folder ini repositori git.")
+            messagebox.showerror("Error", "Git tidak ditemukan.")
 
     def manual_git_push(self):
         self.git_auto()
         self.refresh_list()
 
-    # ============ HELPER ============
     def slugify(self, text):
         slug = text.lower().strip()
         slug = re.sub(r'[^\w\s-]', '', slug)
         slug = re.sub(r'[-\s]+', '-', slug)
         return slug.strip('-')
 
-    def get_html_template(self, title, date_display, excerpt, content):
-      return f'''<!DOCTYPE html>
+    def get_html_template(self, title, date_display, excerpt, content, datetime_iso):
+        return f'''<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{title}</title>
   <meta name="description" content="{excerpt}">
+  <meta name="datetime" content="{datetime_iso}">
   <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
@@ -93,6 +85,7 @@ class BlogGUI:
   <script src="../../script.js"></script>
 </body>
 </html>'''
+
     def parse_post_file(self, filepath, folder_date):
         with open(filepath, 'r', encoding='utf-8') as f:
             html = f.read()
@@ -100,37 +93,39 @@ class BlogGUI:
         title = title_match.group(1).strip() if title_match else ''
         desc_match = re.search(r'<meta\s+name="description"\s+content="(.*?)"\s*/?>', html, re.IGNORECASE)
         excerpt = desc_match.group(1).strip() if desc_match else ''
+        dt_match = re.search(r'<meta\s+name="datetime"\s+content="(.*?)"\s*/?>', html, re.IGNORECASE)
+        dt_str = dt_match.group(1).strip() if dt_match else None
         content_match = re.search(r'<div class="post-content">(.*?)</div>', html, re.DOTALL)
         content = content_match.group(1).strip() if content_match else ''
         return {
             'title': title,
             'excerpt': excerpt,
             'content': content,
-            'date': folder_date
+            'date': folder_date,
+            'datetime_iso': dt_str  # bisa None
         }
 
-    # ============ CRUD ============
     def create_post(self):
         dialog = PostDialog(self.root, "Buat Post Baru")
         self.root.wait_window(dialog.top)
         if dialog.result:
-            title, date_str, excerpt, content = dialog.result
+            title, date_str, excerpt, content, datetime_iso = dialog.result
             folder_name = date_str
             folder_path = os.path.join(POSTS_DIR, folder_name)
             os.makedirs(folder_path, exist_ok=True)
             filename = self.slugify(title) + '.html'
             filepath = os.path.join(folder_path, filename)
 
-            date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+            # Parse datetime untuk tampilan (date_display)
+            dt_obj = datetime.strptime(datetime_iso, '%Y-%m-%dT%H:%M:%S')
             bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
                      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
-            date_display = f"{date_obj.day} {bulan[date_obj.month-1]} {date_obj.year}"
+            date_display = f"{dt_obj.day} {bulan[dt_obj.month-1]} {dt_obj.year}, {dt_obj.hour:02d}:{dt_obj.minute:02d}"
 
-            html = self.get_html_template(title, date_display, excerpt, content)
+            html = self.get_html_template(title, date_display, excerpt, content, datetime_iso)
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(html)
 
-            # Otomatis build index + git push
             self.git_auto(f"Create post: {title}")
             self.refresh_list()
             messagebox.showinfo("Sukses", f"Post '{title}' berhasil dibuat!")
@@ -148,18 +143,18 @@ class BlogGUI:
             messagebox.showerror("Error", "File post tidak ditemukan.")
             return
         data = self.parse_post_file(filepath, post['folder'])
-
+        # data sekarang punya 'datetime_iso'
         dialog = PostDialog(self.root, "Edit Post", data=data)
         self.root.wait_window(dialog.top)
         if dialog.result:
-            new_title, new_date, new_excerpt, new_content = dialog.result
-            # Gunakan tanggal asli (abaikan perubahan tanggal untuk stabilitas)
-            date_obj = datetime.strptime(post['folder'], '%Y-%m-%d')
+            new_title, new_date, new_excerpt, new_content, new_datetime_iso = dialog.result
+            # Gunakan datetime_iso baru (jika user tidak ubah, tetap yang lama)
+            dt_obj = datetime.strptime(new_datetime_iso, '%Y-%m-%dT%H:%M:%S')
             bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
                      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
-            date_display = f"{date_obj.day} {bulan[date_obj.month-1]} {date_obj.year}"
+            date_display = f"{dt_obj.day} {bulan[dt_obj.month-1]} {dt_obj.year}, {dt_obj.hour:02d}:{dt_obj.minute:02d}"
 
-            html = self.get_html_template(new_title, date_display, new_excerpt, new_content)
+            html = self.get_html_template(new_title, date_display, new_excerpt, new_content, new_datetime_iso)
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(html)
 
@@ -192,37 +187,48 @@ class BlogGUI:
     def refresh_list(self):
         self.listbox.delete(0, tk.END)
         self.posts = []
-
         if not os.path.isdir(POSTS_DIR):
             os.makedirs(POSTS_DIR)
 
-        folders = sorted(os.listdir(POSTS_DIR), reverse=True)
-        for folder in folders:
+        # Gather posts with datetime for sorting
+        raw_posts = []
+        for folder in os.listdir(POSTS_DIR):
             folder_path = os.path.join(POSTS_DIR, folder)
             if not os.path.isdir(folder_path):
                 continue
-            # Ambil semua file .html di folder
-            html_files = sorted([f for f in os.listdir(folder_path) if f.endswith('.html')])
-            for fname in html_files:
-                file_path = os.path.join(folder_path, fname)
-                data = self.parse_post_file(file_path, folder)
-                display = f"[{folder}] {data['title']}"
-                self.listbox.insert(tk.END, display)
-                self.posts.append({
-                    'title': data['title'],
-                    'folder': folder,
-                    'filename': fname
-                })
+            for fname in sorted(os.listdir(folder_path)):
+                if fname.endswith('.html'):
+                    file_path = os.path.join(folder_path, fname)
+                    data = self.parse_post_file(file_path, folder)
+                    # Tentukan datetime untuk sorting
+                    dt_str = data.get('datetime_iso')
+                    if dt_str:
+                        try:
+                            dt_obj = datetime.strptime(dt_str, '%Y-%m-%dT%H:%M:%S')
+                        except:
+                            dt_obj = datetime.strptime(folder, '%Y-%m-%d')
+                    else:
+                        dt_obj = datetime.strptime(folder, '%Y-%m-%d')
+                    raw_posts.append({
+                        'title': data['title'],
+                        'folder': folder,
+                        'filename': fname,
+                        'datetime_obj': dt_obj
+                    })
 
-    def on_select(self, event):
-        pass
+        # Sort descending
+        raw_posts.sort(key=lambda p: p['datetime_obj'], reverse=True)
+        self.posts = raw_posts
+        for p in self.posts:
+            display = f"[{p['folder']}] {p['title']}"
+            self.listbox.insert(tk.END, display)
 
 # ============ DIALOG ============
 class PostDialog:
     def __init__(self, parent, title, data=None):
         self.top = tk.Toplevel(parent)
         self.top.title(title)
-        self.top.geometry("500x400")
+        self.top.geometry("500x450")
         self.result = None
 
         tk.Label(self.top, text="Judul").pack(anchor='w', padx=5, pady=2)
@@ -233,6 +239,16 @@ class PostDialog:
         default_date = datetime.now().strftime('%Y-%m-%d')
         self.date_var = tk.StringVar(value=data['date'] if data else default_date)
         tk.Entry(self.top, textvariable=self.date_var, width=20).pack(anchor='w', padx=5)
+
+        tk.Label(self.top, text="Jam (HH:MM)").pack(anchor='w', padx=5, pady=2)
+        # jika data ada datetime_iso, ambil jam dari sana, else sekarang
+        if data and data.get('datetime_iso'):
+            dt = datetime.strptime(data['datetime_iso'], '%Y-%m-%dT%H:%M:%S')
+            default_time = f"{dt.hour:02d}:{dt.minute:02d}"
+        else:
+            default_time = datetime.now().strftime('%H:%M')
+        self.time_var = tk.StringVar(value=default_time)
+        tk.Entry(self.top, textvariable=self.time_var, width=10).pack(anchor='w', padx=5)
 
         tk.Label(self.top, text="Ringkasan / Excerpt").pack(anchor='w', padx=5, pady=2)
         self.excerpt_var = tk.StringVar(value=data['excerpt'] if data else '')
@@ -252,6 +268,7 @@ class PostDialog:
     def save(self):
         title = self.title_var.get().strip()
         date = self.date_var.get().strip()
+        time_str = self.time_var.get().strip()
         excerpt = self.excerpt_var.get().strip()
         content = self.content_text.get('1.0', tk.END).strip()
 
@@ -263,11 +280,14 @@ class PostDialog:
         except ValueError:
             messagebox.showerror("Error", "Format tanggal harus YYYY-MM-DD.")
             return
+        try:
+            hour, minute = map(int, time_str.split(':'))
+            if not (0 <= hour <= 23 and 0 <= minute <= 59):
+                raise ValueError
+        except:
+            messagebox.showerror("Error", "Format jam harus HH:MM (00-23:00-59).")
+            return
 
-        self.result = (title, date, excerpt, content)
+        datetime_iso = f"{date}T{hour:02d}:{minute:02d}:00"
+        self.result = (title, date, excerpt, content, datetime_iso)
         self.top.destroy()
-
-if __name__ == '__main__':
-    root = tk.Tk()
-    app = BlogGUI(root)
-    root.mainloop()
