@@ -164,6 +164,32 @@ h1 {
   font-size: clamp(0.9rem, 2.5vw, 1rem);
   line-height: 1.6;
 }
+/* ===== THUMBNAIL ===== */
+.post-thumbnail {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 0.8rem;
+  display: block;
+}
+.thumbnail-placeholder {
+  width: 100%;
+  height: 180px;
+  background: #e9ecef;
+  border-radius: 8px;
+  margin-bottom: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  font-size: 1rem;
+  flex-direction: column;
+}
+[data-theme="dark"] .thumbnail-placeholder {
+  background: #2d2d44;
+  color: #a0a0b0;
+}
 /* ===== HALAMAN POST ===== */
 .post {
   background: var(--card-bg);
@@ -184,36 +210,6 @@ h1 {
 .post-content p {
   margin-bottom: 1.2rem;
 }
-
-/* ===== THUMBNAIL ===== */
-.post-thumbnail {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 0.8rem;
-  display: block;
-}
-
-.thumbnail-placeholder {
-  width: 100%;
-  height: 180px;
-  background: #e9ecef;
-  border-radius: 8px;
-  margin-bottom: 0.8rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6c757d;
-  font-size: 1rem;
-  flex-direction: column;
-}
-
-[data-theme="dark"] .thumbnail-placeholder {
-  background: #2d2d44;
-  color: #a0a0b0;
-}
-
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .container {

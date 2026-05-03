@@ -49,7 +49,6 @@ def parse_post(file_path, folder_name):
     dt_match = re.search(r'<meta\s+name="datetime"\s+content="(.*?)"\s*/?>', html, re.IGNORECASE)
     dt_str = dt_match.group(1).strip() if dt_match else None
 
-    # Baca meta thumbnail
     thumb_match = re.search(r'<meta\s+name="thumbnail"\s+content="(.*?)"\s*/?>', html, re.IGNORECASE)
     thumbnail = thumb_match.group(1).strip() if thumb_match else ''
 
@@ -101,18 +100,13 @@ def build_index():
 
     posts_html = ''
     for p in posts:
-        # Tentukan thumbnail HTML
         thumb_html = ''
         if p['thumbnail']:
-            # Cek apakah URL atau path lokal
             thumb_src = p['thumbnail']
-            # Jika path lokal, pastikan diawali images/
             if not thumb_src.startswith('http'):
-                # Relatif dari root
                 thumb_src = thumb_src if thumb_src.startswith('images/') else f'images/{thumb_src}'
             thumb_html = f'<img class="post-thumbnail" src="{thumb_src}" alt="{p["title"]}">'
         else:
-            # Placeholder
             thumb_html = '<div class="thumbnail-placeholder">📷<br><small>No thumbnail</small></div>'
 
         posts_html += POST_ITEM_TEMPLATE.format(

@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox, scrolledtext, filedialog
+from tkinter import messagebox, scrolledtext, filedialog, simpledialog
 import os
 import re
 import subprocess
@@ -29,6 +29,7 @@ class BlogGUI:
         tk.Button(right_frame, text="🗑️ Hapus Post", command=self.delete_post, width=15).pack(pady=5)
         tk.Button(right_frame, text="🔄 Refresh Daftar", command=self.refresh_list, width=15).pack(pady=20)
         tk.Button(right_frame, text="🚀 Build & Git Push", command=self.manual_git_push, width=15, bg='lightgreen').pack(pady=5)
+        tk.Button(right_frame, text="⚙️ Build .exe", command=self.build_exe, width=15, bg='lightyellow').pack(pady=5)
 
         self.refresh_list()
 
@@ -51,6 +52,45 @@ class BlogGUI:
     def manual_git_push(self):
         self.git_auto()
         self.refresh_list()
+
+    def build_exe(self):
+        """Membuat file .exe dari gui_app.py menggunakan PyInstaller."""
+        if not os.path.exists('gui_app.py'):
+            messagebox.showerror("Error", "File gui_app.py tidak ditemukan.")
+            return
+        confirm = messagebox.askyesno("Konfirmasi", "Ini akan membuat LienardyBlog.exe di folder yang sama. Lanjutkan?")
+        if not confirm:
+            return
+        try:
+            # Pastikan PyInstaller terinstall
+            subprocess.run(['pyinstaller', '--version'], capture_output=True, check=True)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            messagebox.showerror("Error", "PyInstaller belum terinstall. Jalankan 'pip install pyinstaller' dulu.")
+            return
+
+        try:
+            # Hapus folder build & spec sementara
+            for path in ['build', 'dist', 'LienardyBlog.spec']:
+                if os.path.isdir(path):
+                    shutil.rmtree(path)
+                elif os.path.isfile(path):
+                    os.remove(path)
+
+            # Jalankan pyinstaller
+            subprocess.run([
+                'pyinstaller', '--onefile', '--noconsole',
+                '--distpath', '.',
+                '--name', 'LienardyBlog',
+                'gui_app.py'
+            ], check=True)
+            # Hapus folder build dan spec yang dihasilkan
+            if os.path.isdir('build'):
+                shutil.rmtree('build')
+            if os.path.isfile('LienardyBlog.spec'):
+                os.remove('LienardyBlog.spec')
+            messagebox.showinfo("Sukses", "LienardyBlog.exe berhasil dibuat di folder yang sama.")
+        except subprocess.CalledProcessError as e:
+            messagebox.showerror("Error", f"Gagal membuat exe:\n{e}")
 
     def slugify(self, text):
         slug = text.lower().strip()
@@ -222,12 +262,13 @@ class BlogGUI:
             display = f"[{p['folder']}] {p['title']}"
             self.listbox.insert(tk.END, display)
 
+
 # ============ DIALOG ============
 class PostDialog:
     def __init__(self, parent, title, data=None):
         self.top = tk.Toplevel(parent)
         self.top.title(title)
-        self.top.geometry("500x500")
+        self.top.geometry("500x550")
         self.result = None
 
         tk.Label(self.top, text="Judul").pack(anchor='w', padx=5, pady=2)
@@ -248,8 +289,8 @@ class PostDialog:
         self.time_var = tk.StringVar(value=default_time)
         tk.Entry(self.top, textvariable=self.time_var, width=10).pack(anchor='w', padx=5)
 
-        # --- THUMBNAIL ---
-        tk.Label(self.top, text="Thumbnail (URL atau nama file)").pack(anchor='w', padx=5, pady=2)
+        # --- THUMBNAIL WAJIB ---
+        tk.Label(self.top, text="Thumbnail (wajib) - URL atau pilih gambar").pack(anchor='w', padx=5, pady=2)
         thumb_frame = tk.Frame(self.top)
         thumb_frame.pack(anchor='w', padx=5, fill='x')
 
@@ -263,24 +304,49 @@ class PostDialog:
             )
             if not file_path:
                 return
-            # Pastikan folder images ada
             os.makedirs(IMAGES_DIR, exist_ok=True)
-            # Nama unik
             ext = os.path.splitext(file_path)[1]
             new_name = f"thumb-{datetime.now().strftime('%Y%m%d%H%M%S')}{ext}"
             dest = os.path.join(IMAGES_DIR, new_name)
             shutil.copy(file_path, dest)
-            # Simpan path relatif
             self.thumb_var.set(f"images/{new_name}")
 
         tk.Button(thumb_frame, text="Upload Gambar", command=upload_thumb).pack(side=tk.LEFT, padx=5)
-        # ----------------
 
         tk.Label(self.top, text="Ringkasan / Excerpt").pack(anchor='w', padx=5, pady=2)
         self.excerpt_var = tk.StringVar(value=data['excerpt'] if data else '')
         tk.Entry(self.top, textvariable=self.excerpt_var, width=60).pack(padx=5)
 
+        # --- KONTEN DENGAN TOOLBAR GAMBAR ---
         tk.Label(self.top, text="Konten (HTML atau teks)").pack(anchor='w', padx=5, pady=2)
+
+        toolbar_frame = tk.Frame(self.top)
+        toolbar_frame.pack(anchor='w', padx=5, pady=2)
+
+        def insert_image_url():
+            url = simpledialog.askstring("URL Gambar", "Masukkan URL gambar:")
+            if url:
+                img_tag = f'<img src="{url}" alt="gambar">'
+                self.content_text.insert(tk.INSERT, img_tag)
+
+        def upload_image_to_content():
+            file_path = filedialog.askopenfilename(
+                title="Pilih Gambar untuk Konten",
+                filetypes=[("Image files", "*.jpg *.jpeg *.png *.gif")]
+            )
+            if not file_path:
+                return
+            os.makedirs(IMAGES_DIR, exist_ok=True)
+            ext = os.path.splitext(file_path)[1]
+            new_name = f"img-{datetime.now().strftime('%Y%m%d%H%M%S')}{ext}"
+            dest = os.path.join(IMAGES_DIR, new_name)
+            shutil.copy(file_path, dest)
+            img_tag = f'<img src="images/{new_name}" alt="gambar">'
+            self.content_text.insert(tk.INSERT, img_tag)
+
+        tk.Button(toolbar_frame, text="Sisipkan URL Gambar", command=insert_image_url).pack(side=tk.LEFT, padx=2)
+        tk.Button(toolbar_frame, text="Upload Gambar ke Konten", command=upload_image_to_content).pack(side=tk.LEFT, padx=2)
+
         self.content_text = scrolledtext.ScrolledText(self.top, height=12)
         self.content_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         if data and data['content']:
@@ -302,6 +368,9 @@ class PostDialog:
         if not title:
             messagebox.showerror("Error", "Judul tidak boleh kosong.")
             return
+        if not thumbnail:
+            messagebox.showerror("Error", "Thumbnail wajib diisi (URL atau upload gambar).")
+            return
         try:
             datetime.strptime(date, '%Y-%m-%d')
         except ValueError:
@@ -318,6 +387,7 @@ class PostDialog:
         datetime_iso = f"{date}T{hour:02d}:{minute:02d}:00"
         self.result = (title, date, excerpt, content, datetime_iso, thumbnail)
         self.top.destroy()
+
 
 if __name__ == '__main__':
     root = tk.Tk()
