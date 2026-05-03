@@ -4,6 +4,7 @@ from datetime import datetime
 
 POSTS_DIR = 'posts'
 INDEX_FILE = 'index.html'
+IMAGES_DIR = 'images'
 
 HTML_TEMPLATE = '''<!DOCTYPE html>
 <html lang="id">
@@ -29,6 +30,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 </html>'''
 
 POST_ITEM_TEMPLATE = '''<article class="post-item">
+  {thumbnail_html}
   <h2><a href="{link}">{title}</a></h2>
   <p class="post-meta">{date_display}</p>
   <p class="post-excerpt">{excerpt}</p>
@@ -47,6 +49,10 @@ def parse_post(file_path, folder_name):
     dt_match = re.search(r'<meta\s+name="datetime"\s+content="(.*?)"\s*/?>', html, re.IGNORECASE)
     dt_str = dt_match.group(1).strip() if dt_match else None
 
+    # Baca meta thumbnail
+    thumb_match = re.search(r'<meta\s+name="thumbnail"\s+content="(.*?)"\s*/?>', html, re.IGNORECASE)
+    thumbnail = thumb_match.group(1).strip() if thumb_match else ''
+
     if dt_str:
         try:
             dt_obj = datetime.strptime(dt_str, '%Y-%m-%dT%H:%M:%S')
@@ -60,7 +66,7 @@ def parse_post(file_path, folder_name):
         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ]
     date_display = f"{dt_obj.day} {bulan[dt_obj.month-1]} {dt_obj.year}"
-    if dt_str:  # tampilkan jam jika ada
+    if dt_str:
         date_display += f", {dt_obj.hour:02d}:{dt_obj.minute:02d}"
 
     return {
@@ -69,7 +75,8 @@ def parse_post(file_path, folder_name):
         'date_display': date_display,
         'folder': folder_name,
         'filename': os.path.basename(file_path),
-        'datetime_obj': dt_obj
+        'datetime_obj': dt_obj,
+        'thumbnail': thumbnail
     }
 
 def build_index():
@@ -90,16 +97,30 @@ def build_index():
             post['link'] = f"{POSTS_DIR}/{folder}/{fname}"
             posts.append(post)
 
-    # SORT by datetime descending
     posts.sort(key=lambda p: p['datetime_obj'], reverse=True)
 
     posts_html = ''
     for p in posts:
+        # Tentukan thumbnail HTML
+        thumb_html = ''
+        if p['thumbnail']:
+            # Cek apakah URL atau path lokal
+            thumb_src = p['thumbnail']
+            # Jika path lokal, pastikan diawali images/
+            if not thumb_src.startswith('http'):
+                # Relatif dari root
+                thumb_src = thumb_src if thumb_src.startswith('images/') else f'images/{thumb_src}'
+            thumb_html = f'<img class="post-thumbnail" src="{thumb_src}" alt="{p["title"]}">'
+        else:
+            # Placeholder
+            thumb_html = '<div class="thumbnail-placeholder">📷<br><small>No thumbnail</small></div>'
+
         posts_html += POST_ITEM_TEMPLATE.format(
             title=p['title'],
             link=p['link'],
             date_display=p['date_display'],
-            excerpt=p['excerpt']
+            excerpt=p['excerpt'],
+            thumbnail_html=thumb_html
         )
 
     with open(INDEX_FILE, 'w', encoding='utf-8') as f:

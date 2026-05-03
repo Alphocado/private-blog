@@ -1,10 +1,11 @@
 import tkinter as tk
-from tkinter import messagebox, scrolledtext
+from tkinter import messagebox, scrolledtext, filedialog
 import os
 import re
 import subprocess
+import shutil
 from datetime import datetime
-from build_site import build_index, POSTS_DIR
+from build_site import build_index, POSTS_DIR, IMAGES_DIR
 
 class BlogGUI:
     def __init__(self, root):
@@ -57,7 +58,7 @@ class BlogGUI:
         slug = re.sub(r'[-\s]+', '-', slug)
         return slug.strip('-')
 
-    def get_html_template(self, title, date_display, excerpt, content, datetime_iso):
+    def get_html_template(self, title, date_display, excerpt, content, datetime_iso, thumbnail=''):
         return f'''<!DOCTYPE html>
 <html lang="id">
 <head>
@@ -66,6 +67,7 @@ class BlogGUI:
   <title>{title}</title>
   <meta name="description" content="{excerpt}">
   <meta name="datetime" content="{datetime_iso}">
+  <meta name="thumbnail" content="{thumbnail}">
   <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
@@ -95,6 +97,8 @@ class BlogGUI:
         excerpt = desc_match.group(1).strip() if desc_match else ''
         dt_match = re.search(r'<meta\s+name="datetime"\s+content="(.*?)"\s*/?>', html, re.IGNORECASE)
         dt_str = dt_match.group(1).strip() if dt_match else None
+        thumb_match = re.search(r'<meta\s+name="thumbnail"\s+content="(.*?)"\s*/?>', html, re.IGNORECASE)
+        thumbnail = thumb_match.group(1).strip() if thumb_match else ''
         content_match = re.search(r'<div class="post-content">(.*?)</div>', html, re.DOTALL)
         content = content_match.group(1).strip() if content_match else ''
         return {
@@ -102,27 +106,27 @@ class BlogGUI:
             'excerpt': excerpt,
             'content': content,
             'date': folder_date,
-            'datetime_iso': dt_str  # bisa None
+            'datetime_iso': dt_str,
+            'thumbnail': thumbnail
         }
 
     def create_post(self):
         dialog = PostDialog(self.root, "Buat Post Baru")
         self.root.wait_window(dialog.top)
         if dialog.result:
-            title, date_str, excerpt, content, datetime_iso = dialog.result
+            title, date_str, excerpt, content, datetime_iso, thumbnail = dialog.result
             folder_name = date_str
             folder_path = os.path.join(POSTS_DIR, folder_name)
             os.makedirs(folder_path, exist_ok=True)
             filename = self.slugify(title) + '.html'
             filepath = os.path.join(folder_path, filename)
 
-            # Parse datetime untuk tampilan (date_display)
             dt_obj = datetime.strptime(datetime_iso, '%Y-%m-%dT%H:%M:%S')
             bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
                      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
             date_display = f"{dt_obj.day} {bulan[dt_obj.month-1]} {dt_obj.year}, {dt_obj.hour:02d}:{dt_obj.minute:02d}"
 
-            html = self.get_html_template(title, date_display, excerpt, content, datetime_iso)
+            html = self.get_html_template(title, date_display, excerpt, content, datetime_iso, thumbnail)
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(html)
 
@@ -143,18 +147,16 @@ class BlogGUI:
             messagebox.showerror("Error", "File post tidak ditemukan.")
             return
         data = self.parse_post_file(filepath, post['folder'])
-        # data sekarang punya 'datetime_iso'
         dialog = PostDialog(self.root, "Edit Post", data=data)
         self.root.wait_window(dialog.top)
         if dialog.result:
-            new_title, new_date, new_excerpt, new_content, new_datetime_iso = dialog.result
-            # Gunakan datetime_iso baru (jika user tidak ubah, tetap yang lama)
+            new_title, new_date, new_excerpt, new_content, new_datetime_iso, new_thumbnail = dialog.result
             dt_obj = datetime.strptime(new_datetime_iso, '%Y-%m-%dT%H:%M:%S')
             bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
                      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
             date_display = f"{dt_obj.day} {bulan[dt_obj.month-1]} {dt_obj.year}, {dt_obj.hour:02d}:{dt_obj.minute:02d}"
 
-            html = self.get_html_template(new_title, date_display, new_excerpt, new_content, new_datetime_iso)
+            html = self.get_html_template(new_title, date_display, new_excerpt, new_content, new_datetime_iso, new_thumbnail)
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(html)
 
@@ -190,7 +192,6 @@ class BlogGUI:
         if not os.path.isdir(POSTS_DIR):
             os.makedirs(POSTS_DIR)
 
-        # Gather posts with datetime for sorting
         raw_posts = []
         for folder in os.listdir(POSTS_DIR):
             folder_path = os.path.join(POSTS_DIR, folder)
@@ -200,7 +201,6 @@ class BlogGUI:
                 if fname.endswith('.html'):
                     file_path = os.path.join(folder_path, fname)
                     data = self.parse_post_file(file_path, folder)
-                    # Tentukan datetime untuk sorting
                     dt_str = data.get('datetime_iso')
                     if dt_str:
                         try:
@@ -216,7 +216,6 @@ class BlogGUI:
                         'datetime_obj': dt_obj
                     })
 
-        # Sort descending
         raw_posts.sort(key=lambda p: p['datetime_obj'], reverse=True)
         self.posts = raw_posts
         for p in self.posts:
@@ -228,7 +227,7 @@ class PostDialog:
     def __init__(self, parent, title, data=None):
         self.top = tk.Toplevel(parent)
         self.top.title(title)
-        self.top.geometry("500x450")
+        self.top.geometry("500x500")
         self.result = None
 
         tk.Label(self.top, text="Judul").pack(anchor='w', padx=5, pady=2)
@@ -241,7 +240,6 @@ class PostDialog:
         tk.Entry(self.top, textvariable=self.date_var, width=20).pack(anchor='w', padx=5)
 
         tk.Label(self.top, text="Jam (HH:MM)").pack(anchor='w', padx=5, pady=2)
-        # jika data ada datetime_iso, ambil jam dari sana, else sekarang
         if data and data.get('datetime_iso'):
             dt = datetime.strptime(data['datetime_iso'], '%Y-%m-%dT%H:%M:%S')
             default_time = f"{dt.hour:02d}:{dt.minute:02d}"
@@ -249,6 +247,34 @@ class PostDialog:
             default_time = datetime.now().strftime('%H:%M')
         self.time_var = tk.StringVar(value=default_time)
         tk.Entry(self.top, textvariable=self.time_var, width=10).pack(anchor='w', padx=5)
+
+        # --- THUMBNAIL ---
+        tk.Label(self.top, text="Thumbnail (URL atau nama file)").pack(anchor='w', padx=5, pady=2)
+        thumb_frame = tk.Frame(self.top)
+        thumb_frame.pack(anchor='w', padx=5, fill='x')
+
+        self.thumb_var = tk.StringVar(value=data['thumbnail'] if data and 'thumbnail' in data else '')
+        tk.Entry(thumb_frame, textvariable=self.thumb_var, width=40).pack(side=tk.LEFT)
+
+        def upload_thumb():
+            file_path = filedialog.askopenfilename(
+                title="Pilih Gambar Thumbnail",
+                filetypes=[("Image files", "*.jpg *.jpeg *.png *.gif")]
+            )
+            if not file_path:
+                return
+            # Pastikan folder images ada
+            os.makedirs(IMAGES_DIR, exist_ok=True)
+            # Nama unik
+            ext = os.path.splitext(file_path)[1]
+            new_name = f"thumb-{datetime.now().strftime('%Y%m%d%H%M%S')}{ext}"
+            dest = os.path.join(IMAGES_DIR, new_name)
+            shutil.copy(file_path, dest)
+            # Simpan path relatif
+            self.thumb_var.set(f"images/{new_name}")
+
+        tk.Button(thumb_frame, text="Upload Gambar", command=upload_thumb).pack(side=tk.LEFT, padx=5)
+        # ----------------
 
         tk.Label(self.top, text="Ringkasan / Excerpt").pack(anchor='w', padx=5, pady=2)
         self.excerpt_var = tk.StringVar(value=data['excerpt'] if data else '')
@@ -271,6 +297,7 @@ class PostDialog:
         time_str = self.time_var.get().strip()
         excerpt = self.excerpt_var.get().strip()
         content = self.content_text.get('1.0', tk.END).strip()
+        thumbnail = self.thumb_var.get().strip()
 
         if not title:
             messagebox.showerror("Error", "Judul tidak boleh kosong.")
@@ -289,5 +316,10 @@ class PostDialog:
             return
 
         datetime_iso = f"{date}T{hour:02d}:{minute:02d}:00"
-        self.result = (title, date, excerpt, content, datetime_iso)
+        self.result = (title, date, excerpt, content, datetime_iso, thumbnail)
         self.top.destroy()
+
+if __name__ == '__main__':
+    root = tk.Tk()
+    app = BlogGUI(root)
+    root.mainloop()
