@@ -320,8 +320,15 @@ class PostDialog:
         # --- KONTEN DENGAN TOOLBAR GAMBAR ---
         tk.Label(self.top, text="Konten (HTML atau teks)").pack(anchor='w', padx=5, pady=2)
 
+        # DULUAN bikin content_text, baru toolbar
+        self.content_text = scrolledtext.ScrolledText(self.top, height=12)
+        self.content_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        if data and data['content']:
+            self.content_text.insert('1.0', data['content'])
+
+        # Toolbar di bawah content_text
         toolbar_frame = tk.Frame(self.top)
-        toolbar_frame.pack(anchor='w', padx=5, pady=2)
+        toolbar_frame.pack(anchor='w', padx=5, pady=(0,5))
 
         def insert_image_url():
             url = simpledialog.askstring("URL Gambar", "Masukkan URL gambar:")
@@ -341,22 +348,17 @@ class PostDialog:
             new_name = f"img-{datetime.now().strftime('%Y%m%d%H%M%S')}{ext}"
             dest = os.path.join(IMAGES_DIR, new_name)
             shutil.copy(file_path, dest)
-            img_tag = f'<img src="images/{new_name}" alt="gambar">'
+            # Path RELATIF dari halaman post (posts/YYYY-MM-DD/nama.html) -> ../../images/
+            img_tag = f'<img src="../../images/{new_name}" alt="gambar">'
             self.content_text.insert(tk.INSERT, img_tag)
 
         tk.Button(toolbar_frame, text="Sisipkan URL Gambar", command=insert_image_url).pack(side=tk.LEFT, padx=2)
         tk.Button(toolbar_frame, text="Upload Gambar ke Konten", command=upload_image_to_content).pack(side=tk.LEFT, padx=2)
 
-        self.content_text = scrolledtext.ScrolledText(self.top, height=12)
-        self.content_text.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
-        if data and data['content']:
-            self.content_text.insert('1.0', data['content'])
-
         btn_frame = tk.Frame(self.top)
         btn_frame.pack(pady=10)
         tk.Button(btn_frame, text="Simpan", command=self.save, bg='lightblue').pack(side=tk.LEFT, padx=5)
         tk.Button(btn_frame, text="Batal", command=self.top.destroy).pack(side=tk.LEFT, padx=5)
-
     def save(self):
         title = self.title_var.get().strip()
         date = self.date_var.get().strip()
