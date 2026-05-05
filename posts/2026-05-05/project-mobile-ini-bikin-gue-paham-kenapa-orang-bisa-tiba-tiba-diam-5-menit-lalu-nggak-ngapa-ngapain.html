@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Mobile Ini Bikin Gue Paham Kenapa Orang Bisa Tiba-Tiba Diam 5 Menit Lalu Nggak Ngapa-Ngapain</title>
+  <meta name="description" content="Di project FoodCourt Go ini, saya ngerjain bagian coding hampir sendirian sekitar 90% kerjaan ada di saya. Tim tetap ada kerja juga, tapi beban utama emang numpuk ke sisi teknis. Dari database Firebase, alur customer, sampai dashboard admin, semuanya harus saya rapihin satu-satu. Artikel ini isinya curhatan jujur soal ribetnya project mobile, tapi tetap ada detail teknis biar nggak cuma jadi bacotan kosong.">
+  <meta name="datetime" content="2026-05-05T23:08:00">
+  <meta name="thumbnail" content="images/thumb-20260505231052.jpg">
+  <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="../../index.html" class="logo">LienardyBlog</a>
+    <button id="theme-toggle" aria-label="Toggle dark mode"></button>
+  </nav>
+  <main class="container">
+    <article class="post">
+      <h1>Project Mobile Ini Bikin Gue Paham Kenapa Orang Bisa Tiba-Tiba Diam 5 Menit Lalu Nggak Ngapa-Ngapain</h1>
+      <p class="post-meta">5 Mei 2026, 23:08</p>
+      <div class="post-content">
+        <img src="images/img-20260505231047.jpg" alt="gambar">
+
+<p>saya harus jujur: project mobile ini bukan tipe project yang bikin hidup tenang. Awalnya keliatan kayak tugas kelompok biasa. Kenyataannya? saya yang paling sering ngoding, saya yang paling sering beresin error, saya yang paling sering mikir kenapa satu komponen bisa ngerusak tiga halaman sekaligus. Kurang lebih 90% kerjaan teknis itu lari ke saya.</p>
+
+<p>Tim saya tetap kerja, jadi bukan berarti yang lain cuma duduk manis. Tapi kalau ngomongin bagian coding yang bener-bener ngangkat project ini, ya itu kebanyakan ada di tangan saya. Dan di titik tertentu, rasanya bukan lagi kerja kelompok, tapi kerja kelompok versi “satu orang pegang setengah isi kapal”.</p>
+
+<p>Project yang saya kerjain ini namanya <strong>FoodCourt Go</strong>. Biar gampang dibayangin, ini aplikasi food court yang punya dua sisi (untuk sekarang): customer dan admin. Kelihatannya simpel dari luar. Masalahnya, makin digali makin banyak lapisan yang harus dipikirin. Bukan cuma bikin tampilan jalan, tapi juga alur, data, role akun, status pesanan, dan semua hal kecil yang kalau salah satu goyang, satu aplikasi ikut goyang juga.</p>
+
+<h2>1. 🗄️ Database Firebase yang Nggak Sekadar “Isi Data”</h2>
+<p>saya pakai Firebase Realtime Database sebagai pondasi. Di sini ada node <strong>akun</strong>, <strong>tenant</strong>, <strong>menu</strong>, dan <strong>pesanan</strong>. Kelihatannya cuma empat node. Padahal isi dan relasinya lumayan bikin kepala panas.</p>
+
+<p>Di <strong>akun</strong>, ada role buat bedain customer dan super admin. Ini penting, karena login biasa sama login admin jelas nggak bisa disamain. Di <strong>tenant</strong>, ada status aktif atau nonaktif. Di <strong>menu</strong>, ada tambahan dinamis kayak opsi pedas atau porsi besar. Dan di <strong>pesanan</strong>, ada semua detail yang harus nyambung: customer, tenant, item, total harga, meja, status, waktu. Satu field salah, efeknya bisa ke mana-mana.</p>
+
+<h2>2. 📱 Sisi Customer yang Kelihatannya Santai, Padahal Ribet</h2>
+<p>Customer bisa registrasi, login, lihat tenant, pilih Take Away atau Dine In, pilih menu, pilih tambahan, lalu checkout. Secara alur mungkin kedengeran rapi. Tapi buat ngebangunnya, itu bukan kerjaan lima menit sambil ngopi.</p>
+
+<p>saya harus pastiin data dari Firebase kebaca realtime, search tetap jalan, pilihan menu tetap sinkron, dan ringkasan pesanan nggak ngawur. Bahkan hal yang kelihatannya kecil, kayak bar bawah buat total item dan total harga, bisa jadi masalah kalau state-nya nggak dijaga bener. Jadi ya, “cuma fitur kecil” di mobile itu sering cuma ilusi.</p>
+
+<h2>3. 🧩 Sisi Admin yang Nambah Lapisan Masalah</h2>
+<p>Begitu admin masuk, project ini langsung naik level. Ada dashboard statistik, manajemen tenant, manajemen menu, daftar pesanan, detail pesanan, laporan, sampai profil admin. Semua itu harus jalan di atas data yang sama, tapi dengan hak akses yang beda.</p>
+
+<p>Yang bikin lumayan ngeselin adalah semua halaman admin harus konsisten. Bottom navigation harus tetap rapi, data harus realtime, dan setiap aksi kayak tambah tenant, hapus menu, atau update status pesanan harus langsung kerasa efeknya. Jadi bukan cuma bikin halaman. saya juga harus mikirin logika antarhalaman biar nggak berantakan kayak project yang dikerjain setengah hati.</p>
+
+<h2>4. ⚙️ Hal-Hal Teknis yang Beneran Nguras Tenaga</h2>
+<p>Bagian paling capek bukan cuma nulis kode. Yang lebih nyebelin itu pas satu error kecil nular ke mana-mana. Pernah ada <strong>NullPointerException</strong> gara-gara id layout nggak cocok. Pernah juga ada error karena atribut layout kurang. Pernah class nggak kebaca, id nggak ditemukan, listener dobel, sampai struktur layout harus dibenerin lagi dari awal.</p>
+
+<p>Dan ya, itu semua bukan teori. Itu hasil dari duduk, ngeliatin error, bongkar file, revisi, test, crash lagi, revisi lagi. Mobile development itu kadang lebih mirip perang lawan typo dan state daripada sekadar “bikin aplikasi”.</p>
+
+<h2>5. 🧠 Kenapa Project Ini Terasa Berat Banget</h2>
+<p>Karena saya nggak cuma ngerjain tampilan. saya juga harus mikirin alur data, role user, integrasi Firebase, interaksi antar-activity, adapter, layout XML, sampai struktur database yang nanti masih bisa dikembangin. Itu semua numpuk di satu orang, dan jujur aja, capeknya kerasa.</p>
+
+<p>Yang bikin project ini tetap jalan bukan karena gampang, tapi karena satu-satunya pilihan ya memang harus diberesin. Kalau nggak saya yang ngerti alurnya, ya nggak ada yang bisa tiba-tiba nebak struktur dalamnya. Jadi mau nggak mau, saya yang paling sering masuk ke bagian yang paling bikin mumet.</p>
+
+<hr>
+
+<p>Di sisi lain, saya juga nggak bisa bilang project ini sia-sia. Justru dari sini saya belajar banyak hal yang nggak bakal kerasa kalau cuma baca materi doang. saya jadi lebih ngerti cara ngebangun alur aplikasi mobile dari nol, nyambungin frontend dan backend sederhana, ngatur data realtime, dan ngebenerin masalah yang muncul tanpa drama berlebihan.</p>
+
+<p>Jadi walaupun project ini ribet, bikin capek, dan lumayan bikin emosi, tetap ada manfaatnya. Minimal saya jadi tahu rasanya ngerjain project yang kelihatannya “cuma aplikasi food court”, padahal isinya cukup buat nguras energi satu semester.</p>
+
+<p>Untuk sekarang, project-nya jalan. Nggak sempurna, tapi jalan. Dan di dunia coding, kadang itu udah cukup buat lanjut hidup.</p>
+      </div>
+    </article>
+  </main>
+  <script src="../../script.js"></script>
+</body>
+</html>

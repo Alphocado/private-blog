@@ -221,7 +221,7 @@ class BlogGUI:
             if os.path.exists(filepath):
                 os.remove(filepath)
                 if not os.listdir(folder_path):
-                    os.rmdir(folder_path)
+                    os.rmdir(folder_path)  
             self.git_auto(f"Delete post: {post['title']}")
             self.refresh_list()
             messagebox.showinfo("Sukses", "Post dihapus.")
